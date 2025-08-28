@@ -22,13 +22,11 @@ except:
 
 @tool
 def read_excel(file_path: str) -> str:
-    """Read an Excel file and return column names and first 5 rows."""
     df = pd.read_excel(file_path)
     return f"Columns: {list(df.columns)}\n\nPreview:\n{df.head().to_string()}"
 
 @tool
 def filter_and_write_excel(file_path: str, condition: str, new_sheet: str) -> str:
-    """Filter rows from Excel using a condition and write results to a new sheet."""
     df = pd.read_excel(file_path)
     filtered = df.query(condition)
     with pd.ExcelWriter(file_path, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
@@ -37,7 +35,6 @@ def filter_and_write_excel(file_path: str, condition: str, new_sheet: str) -> st
 
 @tool
 def read_gsheet(sheet_id: str, worksheet: str = None) -> str:
-    """Read a Google Sheet and return column names + first 5 rows."""
     if not gc:
         return "❌ Google Sheets not configured."
     sh = gc.open_by_key(sheet_id)
@@ -47,7 +44,6 @@ def read_gsheet(sheet_id: str, worksheet: str = None) -> str:
 
 @tool
 def filter_and_write_gsheet(sheet_id: str, condition: str, new_sheet: str) -> str:
-    """Filter rows from Google Sheet and write results to a new sheet."""
     if not gc:
         return "❌ Google Sheets not configured."
     sh = gc.open_by_key(sheet_id)
@@ -67,14 +63,27 @@ def filter_and_write_gsheet(sheet_id: str, condition: str, new_sheet: str) -> st
     return f"✅ Wrote {len(filtered)} rows to Google Sheet tab '{new_sheet}'."
 
 # --------------------------
-# Setup LangChain Agent
+# LangChain Agent Setup
 # --------------------------
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+from langchain.chat_models import ChatOpenAI
+import streamlit as st
+
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    openai_api_key=st.secrets["OPENAI_API_KEY"]  # <- fetches key from Streamlit Secrets
+)
+
 
 tools = [read_excel, filter_and_write_excel, read_gsheet, filter_and_write_gsheet]
 
-agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
+agent = initialize_agent(
+    tools,
+    llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)
 
 # --------------------------
 # Streamlit UI

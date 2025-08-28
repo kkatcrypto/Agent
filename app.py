@@ -22,11 +22,22 @@ except:
 
 @tool
 def read_excel(file_path: str) -> str:
+    """
+    Reads an Excel file and returns the column names and first 5 rows.
+    """
     df = pd.read_excel(file_path)
     return f"Columns: {list(df.columns)}\n\nPreview:\n{df.head().to_string()}"
 
 @tool
 def filter_and_write_excel(file_path: str, condition: str, new_sheet: str) -> str:
+    """
+    Filters rows in an Excel file based on a condition and writes the results to a new sheet.
+    
+    Parameters:
+    - file_path: Path to the Excel file
+    - condition: Pandas query string to filter rows
+    - new_sheet: Name of the sheet to write filtered rows
+    """
     df = pd.read_excel(file_path)
     filtered = df.query(condition)
     with pd.ExcelWriter(file_path, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
@@ -35,6 +46,13 @@ def filter_and_write_excel(file_path: str, condition: str, new_sheet: str) -> st
 
 @tool
 def read_gsheet(sheet_id: str, worksheet: str = None) -> str:
+    """
+    Reads a Google Sheet and returns the column names and first 5 rows.
+
+    Parameters:
+    - sheet_id: The ID of the Google Sheet
+    - worksheet: Optional worksheet name; reads the first sheet if None
+    """
     if not gc:
         return "❌ Google Sheets not configured."
     sh = gc.open_by_key(sheet_id)
@@ -44,6 +62,14 @@ def read_gsheet(sheet_id: str, worksheet: str = None) -> str:
 
 @tool
 def filter_and_write_gsheet(sheet_id: str, condition: str, new_sheet: str) -> str:
+    """
+    Filters rows in a Google Sheet based on a condition and writes the results to a new sheet.
+
+    Parameters:
+    - sheet_id: The ID of the Google Sheet
+    - condition: Pandas query string to filter rows
+    - new_sheet: Name of the sheet to write filtered rows
+    """
     if not gc:
         return "❌ Google Sheets not configured."
     sh = gc.open_by_key(sheet_id)
@@ -69,7 +95,7 @@ def filter_and_write_gsheet(sheet_id: str, condition: str, new_sheet: str) -> st
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0,
-    openai_api_key=st.secrets["OPENAI_API_KEY"]  # <- Streamlit Secrets
+    openai_api_key=st.secrets["OPENAI_API_KEY"]  # Streamlit Secrets
 )
 
 tools = [read_excel, filter_and_write_excel, read_gsheet, filter_and_write_gsheet]

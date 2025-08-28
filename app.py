@@ -2,12 +2,12 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
-from langchain_openai import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.tools import tool
 from langchain.agents import initialize_agent, AgentType
 
 # --------------------------
-# Setup Google Sheets
+# Google Sheets Setup
 # --------------------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 try:
@@ -28,7 +28,7 @@ def read_excel(file_path: str) -> str:
 
 @tool
 def filter_and_write_excel(file_path: str, condition: str, new_sheet: str) -> str:
-    """Filter rows from Excel using a condition (e.g., 'Sales > 500') and write results to a new sheet."""
+    """Filter rows from Excel using a condition and write results to a new sheet."""
     df = pd.read_excel(file_path)
     filtered = df.query(condition)
     with pd.ExcelWriter(file_path, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:

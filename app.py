@@ -14,7 +14,7 @@ try:
     creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
     gc = gspread.authorize(creds)
 except:
-    gc = None  # If no Google Sheets credentials
+    gc = None  # Google Sheets not configured
 
 # --------------------------
 # Tools for Excel & Google Sheets
@@ -66,22 +66,18 @@ def filter_and_write_gsheet(sheet_id: str, condition: str, new_sheet: str) -> st
 # LangChain Agent Setup
 # --------------------------
 
-from langchain.chat_models import ChatOpenAI
-import streamlit as st
-
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0,
-    openai_api_key=st.secrets["OPENAI_API_KEY"]  # <- fetches key from Streamlit Secrets
+    openai_api_key=st.secrets["OPENAI_API_KEY"]  # <- Streamlit Secrets
 )
-
 
 tools = [read_excel, filter_and_write_excel, read_gsheet, filter_and_write_gsheet]
 
 agent = initialize_agent(
     tools,
     llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    agent=AgentType.OPENAI_FUNCTIONS,  # Supports multi-input tools
     verbose=True
 )
 
